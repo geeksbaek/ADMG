@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>아키에이지 골드 분배 매크로 생성기</title>
+    <style>
+        .container {
+            margin: 170px 0;
+        }
+        .container, .fixed {
+            display: flex;
+            flex-flow: column;
+            justify-content: center;
+            align-content: center;
+            align-items: center;
+        }
+
+        .container > div, .fixed > div {
+            margin: 5px 0;
+        }
+        
+        input {
+            margin: 0px 5px;
+        }
+
+        input:invalid {
+            color: red;
+        }
+
+        input.shoutInput {
+            width: 50px;
+        }
+
+        .fixed {
+            position: fixed;
+            background-color: #eee;
+            color: black;
+            top: 0;
+            margin: 0;
+            padding: 10px 0;
+            width: 100%;
+        }
+
+        #generateButton {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50px;
+            background-color: chocolate;
+        }
+
+        #subject {
+            width: 300px;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/clipboard.js/1.5.16/clipboard.min.js"></script>
+</head>
+
+<body>
+    <div class="fixed">
+        <div>
+            <span>분배할 금액</span>
+            <input type="text" class="shoutInput" id="goldInput" placeholder="Gold" onKeyUp="onChangePeople();">
+            <input type="text" class="shoutInput" id="silverInput" placeholder="Silver" onKeyUp="onChangePeople();" maxlength="2">
+            <input type="text" class="shoutInput" id="bronzeInput" placeholder="Bronze" onKeyUp="onChangePeople();" maxlength="2">
+        </div>
+        <div>
+            총 분배받는 인원 수: <strong id="cnt">0</strong>명
+        </div>
+        <div>
+            1인당 분배받는 금액:
+            <strong id="goldOutput">0</strong>골
+            <strong id="silverOutput">0</strong>은
+            <strong id="bronzeOutput">0</strong>동
+        </div>
+        <div>
+            <input id="subject" type="text" placeholder="보낼 편지의 제목 (델령선 170101 분배금)" pattern="[a-zA-Z0-9ㄱ-힣 ]+">
+            <button class="btn" data-clipboard-text="sssssss">Macro Generate</button>
+        </div>
+    </div>
+    <div class="container">
+        <div>
+            <div>
+                <input onKeyUp="onKeyUp();" pattern="[a-zA-Z가-힣]+" class="people" placeholder="분배받을 사람"><button onclick="removeElement();" disabled>Remove</button>
+            </div>
+        </div>        
+    </div>
+
+<script>
+    // Mozilla, Opera, Webkit 
+    if (document.addEventListener) {
+        document.addEventListener("DOMContentLoaded", function () {
+            document.removeEventListener("DOMContentLoaded", arguments.callee, false);
+            domReady();
+        }, false);
+    } 
+
+    // Internet Explorer
+    else if (document.attachEvent) {
+        document.attachEvent("onreadystatechange", function () {
+            if (document.readyState === "complete") {
+                document.detachEvent("onreadystatechange", arguments.callee);
+                domReady();
+            }
+        });
+    }
+
+    //DOM이 모두 로드 되었을 때
+    function domReady () {
+        new Clipboard('.btn');
+    }
+
+    function onKeyUp() {
+        if (event.keyCode == 13 && event.srcElement.value) {
+            let newRow = document.createElement("div");
+            newRow.setAttribute("class", "row");
+
+            let newInput = document.createElement("input");
+            newInput.setAttribute("onKeyUp", "onKeyUp();")
+            newInput.setAttribute("pattern", "[a-zA-Z가-힣]+")
+            newInput.setAttribute("placeholder", "분배받을 사람")
+            newInput.setAttribute("class", "people")
+
+            let newButton = document.createElement("button");
+            newButton.innerHTML = "Remove";
+            newButton.setAttribute("onclick", "removeElement();")
+
+            newRow.appendChild(newInput);
+            newRow.appendChild(newButton);
+
+
+            document.querySelector(".container").appendChild(newRow);
+            newInput.focus();
+        }
+        onChangePeople();
+    }
+
+    function removeElement() {
+        event.srcElement.parentNode.parentNode.removeChild(event.srcElement.parentNode);
+        onChangePeople();
+    }
+
+    function onChangePeople() {
+        let cnt = calcPeopleCnt();
+        let total = function() {
+            document.querySelector(".container")
+        }()
+        calcEachGold(cnt);
+    }
+
+    function calcPeopleCnt() {
+        let cnt = 0;
+        for (v of document.querySelectorAll(".people")) {
+            if (v.value != "") {
+                cnt++;
+            }
+        }
+        document.querySelector("#cnt").textContent = cnt;
+        return cnt;
+    }
+
+    function calcEachGold(cnt) {
+        let gold = Number(document.querySelector("#goldInput").value);
+        let silver = Number(document.querySelector("#silverInput").value);
+        let bronze = Number(document.querySelector("#bronzeInput").value);
+
+        if (isNaN(gold)) gold = 0;
+        if (isNaN(silver)) silver = 0;
+        if (isNaN(bronze)) bronze = 0;
+        
+        let each = ((gold * 10000) + (silver * 100) + (bronze)) / cnt;
+
+        let eachGold = parseInt(each / 10000);
+        let eachSilver = parseInt((each % 10000) / 100);
+        let eachBronze = parseInt((each % 10000) % 100);
+
+        if (isNaN(eachGold)) eachGold = 0;
+        if (isNaN(eachSilver)) eachSilver = 0;
+        if (isNaN(eachBronze)) eachBronze = 0;
+
+        document.querySelector("#goldOutput").textContent = eachGold;
+        document.querySelector("#silverOutput").textContent = eachSilver;
+        document.querySelector("#bronzeOutput").textContent = eachBronze;
+    }
+
+    function generateMacro() {
+
+    }
+
+    var ENG_KEY = "rRseEfaqQtTdwWczxvgkoiOjpuPhynbml";
+    var KOR_KEY = "ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎㅏㅐㅑㅒㅓㅔㅕㅖㅗㅛㅜㅠㅡㅣ";
+    var CHO_DATA = "ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ";
+    var JUNG_DATA = "ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ";
+    var JONG_DATA = "ㄱㄲㄳㄴㄵㄶㄷㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅄㅅㅆㅇㅈㅊㅋㅌㅍㅎ";
+
+    function korTypeToEng(src) {
+        var res = "";
+        if (src.length == 0)
+            return res;
+
+        for (var i = 0; i < src.length; i++) {
+            var ch = src.charAt(i);
+            var nCode = ch.charCodeAt(0);
+            var nCho = CHO_DATA.indexOf(ch), nJung = JUNG_DATA.indexOf(ch), nJong = JONG_DATA.indexOf(ch);
+            var arrKeyIndex = [-1, -1, -1, -1, -1];
+
+            if (0xac00 <= nCode && nCode <= 0xd7a3) {
+                nCode -= 0xac00;
+                arrKeyIndex[0] = Math.floor(nCode / (21 * 28));			// 초성
+                arrKeyIndex[1] = Math.floor(nCode / 28) % 21;			// 중성
+                arrKeyIndex[3] = nCode % 28 - 1;						// 종성
+            } else if (nCho != -1)			// 초성 자음
+                arrKeyIndex[0] = nCho;
+            else if (nJung != -1)			// 중성
+                arrKeyIndex[1] = nJung;
+            else if (nJong != -1)			// 종성 자음
+                arrKeyIndex[3] = nJong;
+            else							// 한글이 아님
+                res += ch;
+
+            // 실제 Key Index로 변경. 초성은 순서 동일
+            if (arrKeyIndex[1] != -1) {
+                if (arrKeyIndex[1] == 9) {					// ㅘ
+                    arrKeyIndex[1] = 27;
+                    arrKeyIndex[2] = 19;
+                } else if (arrKeyIndex[1] == 10) {			// ㅙ
+                    arrKeyIndex[1] = 27;
+                    arrKeyIndex[2] = 20;
+                } else if (arrKeyIndex[1] == 11) {			// ㅚ
+                    arrKeyIndex[1] = 27;
+                    arrKeyIndex[2] = 32;
+                } else if (arrKeyIndex[1] == 14) {			// ㅝ
+                    arrKeyIndex[1] = 29;
+                    arrKeyIndex[2] = 23;
+                } else if (arrKeyIndex[1] == 15) {			// ㅞ
+                    arrKeyIndex[1] = 29;
+                    arrKeyIndex[2] = 24;
+                } else if (arrKeyIndex[1] == 16) {			// ㅟ
+                    arrKeyIndex[1] = 29;
+                    arrKeyIndex[2] = 32;
+                } else if (arrKeyIndex[1] == 19) {			// ㅢ
+                    arrKeyIndex[1] = 31;
+                    arrKeyIndex[2] = 32;
+                } else {
+                    arrKeyIndex[1] = KOR_KEY.indexOf(JUNG_DATA.charAt(arrKeyIndex[1]));
+                    arrKeyIndex[2] = -1;
+                }
+            }
+            if (arrKeyIndex[3] != -1) {
+                if (arrKeyIndex[3] == 2) {					// ㄳ
+                    arrKeyIndex[3] = 0
+                    arrKeyIndex[4] = 9;
+                } else if (arrKeyIndex[3] == 4) {			// ㄵ
+                    arrKeyIndex[3] = 2;
+                    arrKeyIndex[4] = 12;
+                } else if (arrKeyIndex[3] == 5) {			// ㄶ
+                    arrKeyIndex[3] = 2;
+                    arrKeyIndex[4] = 18;
+                } else if (arrKeyIndex[3] == 8) {			// ㄺ
+                    arrKeyIndex[3] = 5;
+                    arrKeyIndex[4] = 0;
+                } else if (arrKeyIndex[3] == 9) {			// ㄻ
+                    arrKeyIndex[3] = 5;
+                    arrKeyIndex[4] = 6;
+                } else if (arrKeyIndex[3] == 10) {			// ㄼ
+                    arrKeyIndex[3] = 5;
+                    arrKeyIndex[4] = 7;
+                } else if (arrKeyIndex[3] == 11) {			// ㄽ
+                    arrKeyIndex[3] = 5;
+                    arrKeyIndex[4] = 9;
+                } else if (arrKeyIndex[3] == 12) {			// ㄾ
+                    arrKeyIndex[3] = 5;
+                    arrKeyIndex[4] = 16;
+                } else if (arrKeyIndex[3] == 13) {			// ㄿ
+                    arrKeyIndex[3] = 5;
+                    arrKeyIndex[4] = 17;
+                } else if (arrKeyIndex[3] == 14) {			// ㅀ
+                    arrKeyIndex[3] = 5;
+                    arrKeyIndex[4] = 18;
+                } else if (arrKeyIndex[3] == 17) {			// ㅄ
+                    arrKeyIndex[3] = 7;
+                    arrKeyIndex[4] = 9;
+                } else {
+                    arrKeyIndex[3] = KOR_KEY.indexOf(JONG_DATA.charAt(arrKeyIndex[3]));
+                    arrKeyIndex[4] = -1;
+                }
+            }
+            for (var j = 0; j < 5; j++) {
+                if (arrKeyIndex[j] != -1)
+                    res += ENG_KEY.charAt(arrKeyIndex[j]);
+            }
+        }
+        return res;
+    }
+
+</script>
+</body>
+
+</html>
