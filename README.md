@@ -14,7 +14,7 @@
 
 # Usage
 
-### 1. 분배할 금액, 우편의 제목, 받을 유저 목록을 작성한 뒤 Macro Generate 버튼을 클릭
+### 1. 분배할 금액, 우편의 제목, 받을 유저 목록을 작성한 뒤 Script Generate 버튼을 클릭
 생성된 스크립트는 자동으로 클립보드에 복사됩니다.
 
 <img src="http://i.imgur.com/oDeezZe.png">
