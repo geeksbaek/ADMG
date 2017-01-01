@@ -90,7 +90,7 @@
         </div>
         <div>
             <input id="subject" type="text" placeholder="보낼 편지의 제목 (델령선 170101 분배금)" pattern="[a-zA-Z0-9ㄱ-힣 ]+">
-            <button class="btn" data-clipboard-text="">Script Generate</button>
+            <button id="clipboard" data-clipboard-text="">Script Generate</button>
         </div>
     </div>
     <div class="container">
@@ -122,7 +122,7 @@
 
     //DOM이 모두 로드 되었을 때
     function domReady () {
-        new Clipboard('.btn');
+        new Clipboard('#clipboard');
     }
 
     function onKeyUp() {
@@ -161,6 +161,7 @@
             document.querySelector(".container")
         }()
         calcEachGold(cnt);
+        generateMacro();
     }
 
     function calcPeopleCnt() {
@@ -199,7 +200,135 @@
     }
 
     function generateMacro() {
+        let eachGold = document.querySelector("#goldOutput").textContent;
+        let eachSilver = document.querySelector("#silverOutput").textContent;
+        let eachBronze = document.querySelector("#bronzeOutput").textContent;
+        let cnt = document.querySelector("#cnt").textContent;
+        let subject = document.querySelector("#subject").value;
+        let eachPeopleScript = function() {
+            console.log(subject);
+            let scripts = "";
+            for (el of document.querySelectorAll(".people")) {
+                if (!el.value) {
+                    continue;
+                }
+                scripts += `
+                MoveMouseToVirtual(MailOpenX, MailOpenY)
+		        Sleep(Basic_Wait_Term)
 
+                PressAndReleaseMouseButton(1)
+                Sleep(UI_Wait_Term)
+
+                write("${korTypeToEng(el.value)}")
+                Sleep(Basic_Wait_Term)
+
+                PressAndReleaseKey("tab")
+                Sleep(Basic_Wait_Term)
+
+                write("${korTypeToEng(subject)}")
+                Sleep(Basic_Wait_Term)
+
+                PressAndReleaseKey("tab")
+		        Sleep(Basic_Wait_Term)
+
+                write(tostring(math.random(10000, 100000)))
+		        Sleep(Basic_Wait_Term)
+
+                MoveMouseToVirtual(GoldX, GoldY)
+		        Sleep(Basic_Wait_Term)
+
+                PressAndReleaseMouseButton(1)
+		        Sleep(Basic_Wait_Term)
+
+                write(Gold)
+                Sleep(Basic_Wait_Term)
+
+                PressAndReleaseKey("tab")
+                Sleep(Basic_Wait_Term)
+
+                write(Silver)
+                Sleep(Basic_Wait_Term)
+
+                PressAndReleaseKey("tab")
+                Sleep(Basic_Wait_Term)
+
+                write(Bronze)
+                Sleep(Basic_Wait_Term)
+
+                if IsAborted() == true then
+                    do return end
+                end
+
+                MoveMouseToVirtual(MailSendX, MailSendY)
+                Sleep(Basic_Wait_Term)
+
+                PressAndReleaseMouseButton(1)
+                Sleep(UI_Wait_Term)
+                `;
+            }
+            return scripts;
+        }();
+
+        let script = `Gold = "${eachGold}" -- 금
+        Silver = "${eachSilver}" -- 은
+        Bronze = "${eachBronze}" -- 동
+
+        People = "${cnt}" -- 분배받을 인원
+
+        writeButtonPosition = 9 -- 편지쓰기 포지션 셋팅 키
+        goldFormPosition = 10 --  골드 입력 위치 포지션 셋팅 키
+        sendButtonPosition = 11 -- 보내기 버튼 위치 포지션 셋팅 키
+        startMacro = 12 -- 매크로 시작 키
+
+        MailOpenX, MailOpenY = nil
+        GoldX, GoldY = nil
+        MailSendX, MailSendY = nil
+
+        Basic_Wait_Term = 40
+        UI_Wait_Term = 300
+
+        function MailMacro()
+            math.randomseed(GetRunningTime())
+            
+            ${eachPeopleScript}
+        end
+
+        function write(str)
+            OutputLogMessage("%s\\n", str)
+            for c in str:gmatch"." do
+                if c == " " then
+                    c = "spacebar"
+                end
+                PressAndReleaseKey(c)
+                Sleep(Basic_Wait_Term)
+            end
+        end
+
+        function IsAborted()
+            if IsKeyLockOn("scrolllock") then
+                PressAndReleaseKey("scrolllock")
+                return true
+            else 
+                return false
+            end
+        end
+
+        function OnEvent(event, arg, family)
+            OutputLogMessage("event = %s, arg = %s, family = %s\\n", event, arg, family);
+
+            if (event == "MOUSE_BUTTON_PRESSED" and arg == writeButtonPosition) then
+                MailOpenX, MailOpenY = GetMousePosition()
+            elseif (event == "MOUSE_BUTTON_PRESSED" and arg == goldFormPosition) then
+                GoldX, GoldY = GetMousePosition()
+            elseif (event == "MOUSE_BUTTON_PRESSED" and arg == sendButtonPosition) then
+                MailSendX, MailSendY = GetMousePosition()
+            elseif (event == "MOUSE_BUTTON_PRESSED" and arg == startMacro) then
+                MailMacro()
+            end
+        end
+        `;
+        
+        document.querySelector("#clipboard").dataset.clipboardText = script;
     }
 
     var ENG_KEY = "rRseEfaqQtTdwWczxvgkoiOjpuPhynbml";
